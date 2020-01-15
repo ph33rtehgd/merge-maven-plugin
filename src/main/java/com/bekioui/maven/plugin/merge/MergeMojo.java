@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -90,8 +91,38 @@ public class MergeMojo extends AbstractMojo {
 			} catch (IOException e) {
 				throw new MojoExecutionException("Failed to find files with pattern.", e);
 			}
+		} else if (merge.getSourcesFiles() != null) {
+			if (merge.getSearchDir() == null) {
+				throw new MojoExecutionException("searchDir must be set to a directory");
+			}
+			
+			if (!merge.getSearchDir().isDirectory()) {
+				throw new MojoExecutionException("searchDir is not a directory: " + merge.getSearchDir().getAbsolutePath());
+			}
+			
+			List<File> sourcesFiles = merge.getSourcesFiles();
+			List<File> resolvedSources = new ArrayList<>();
+			for (File sourceFile : sourcesFiles) {
+				try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(sourceFile)))) {
+					String line;
+					while ((line = reader.readLine()) != null) {
+						try {
+							Path resolvedSource = Paths.get(merge.getSearchDir().toPath().toString(), line);
+							resolvedSources.add(resolvedSource.toFile());
+							LOGGER.info("Source file path found: " + resolvedSource.toString());
+						}
+						catch (Exception e) {
+							throw new MojoExecutionException("Failed to read source file " + line, e);
+						}
+					}
+				} catch (Exception e) {
+					throw new MojoExecutionException("Failed to read sources file " + sourceFile, e);
+				}
+			}
+			
+			return resolvedSources;
 		} else {
-			throw new MojoExecutionException("Failed to find files to merge, <sources> or <pattern> are not defined");
+			throw new MojoExecutionException("Failed to find files to merge, <sources>, <pattern> or <sourcesFiles> are not defined");
 		}
 	}
 

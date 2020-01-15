@@ -30,6 +30,9 @@ public class Merge {
 
 	@Parameter(property = "pattern", required = true)
 	private String pattern;
+	
+	@Parameter(property = "sourcesFiles", required = true)
+	private List<File> sourcesFiles;
 
 	@Parameter(property = "override")
 	private boolean override;
@@ -57,9 +60,13 @@ public class Merge {
 		return searchDir;
 	}
 
+	public List<File> getSourcesFiles() {
+		return sourcesFiles;
+	}
+	
 	@Override
 	public String toString() {
-		return "Merge [target=" + target + ", sources=" + sources + ", pattern=" + pattern + ", override=" + override + ", searchDir=" + searchDir + "]";
+		return "Merge [target=" + target + ", sources=" + sources + ", pattern=" + pattern + ", sourceFiles=" + sourcesFiles + ", override=" + override + ", searchDir=" + searchDir + "]";
 	}
 
 }
